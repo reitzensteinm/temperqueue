@@ -117,7 +117,7 @@ mod test {
     #[test]
     fn test_mpsc() {
         let (send, recv) = MPSC::<i32>::channel();
-        let thread_count = 5;
+        let thread_count = 32;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_shared_sender(send, thread_count);
@@ -140,7 +140,7 @@ mod test {
     #[test]
     fn test_spmc() {
         let (send, recv) = SPMC::<i32>::channel();
-        let thread_count = 5;
+        let thread_count = 32;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_unique_sender(send);
@@ -163,7 +163,7 @@ mod test {
     #[test]
     fn test_mpmc() {
         let (send, recv) = MPMC::<i32>::channel();
-        let thread_count = 5;
+        let thread_count = 32;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_shared_sender(send, thread_count);

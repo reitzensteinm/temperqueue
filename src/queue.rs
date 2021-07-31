@@ -192,7 +192,7 @@ impl Consumer for MultiConsumer {
         unsafe {
             let p = queue.offset((tail % BUFFER_SIZE) as isize);
             let res = *p;
-
+            std::sync::atomic::fence(Ordering::SeqCst);
             if let Ok(_) = self.read_progress.compare_exchange(
                 tail,
                 tail + 1,

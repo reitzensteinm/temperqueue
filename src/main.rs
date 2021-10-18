@@ -163,7 +163,7 @@ mod test {
     #[test]
     fn test_mpmc() {
         let (send, recv) = MPMC::<i32>::channel();
-        let thread_count = 32;
+        let thread_count = 8;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_shared_sender(send, thread_count);

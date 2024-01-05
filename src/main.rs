@@ -4,6 +4,8 @@ use crate::queue::{
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
+use num_cpus;
+
 
 mod queue;
 
@@ -17,7 +19,7 @@ mod test {
     use super::*;
     use crate::queue::SPMC;
 
-    fn test_shared_sender(s: SharedSender<i32>, thread_count: i32) -> JoinHandle<()> {
+    fn test_shared_sender(s: SharedSender<i32>, thread_count: usize) -> JoinHandle<()> {
         thread::spawn(move || {
             let mut threads = Vec::new();
             let a = Arc::new(s);
@@ -61,7 +63,7 @@ mod test {
 
     fn test_shared_receiver(
         r: SharedReceiver<i32>,
-        thread_count: i32,
+        thread_count: usize,
         halt: Arc<Mutex<bool>>,
     ) -> JoinHandle<i64> {
         thread::spawn(move || {
@@ -117,10 +119,10 @@ mod test {
     #[test]
     fn test_mpsc() {
         let (send, recv) = MPSC::<i32>::channel();
-        let thread_count = 5;
+        let send_thread_count = num_cpus::get() - 1;
 
         let finished = Arc::new(Mutex::new(false));
-        let send_test = test_shared_sender(send, thread_count);
+        let send_test = test_shared_sender(send, send_thread_count);
         let receive_test = test_unique_receiver(recv, finished.clone());
 
         send_test.join().unwrap();
@@ -133,18 +135,18 @@ mod test {
         let r = receive_test.join().unwrap();
         let tr = TO_READ as i64 - 1;
 
-        let expected = ((tr * tr) / 2 + (tr + 1) / 2) * thread_count as i64;
+        let expected = ((tr * tr) / 2 + (tr + 1) / 2) * send_thread_count as i64;
         assert!(r == expected);
     }
 
     #[test]
     fn test_spmc() {
         let (send, recv) = SPMC::<i32>::channel();
-        let thread_count = 5;
+        let receive_thread_count  = num_cpus::get() - 1;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_unique_sender(send);
-        let receive_test = test_shared_receiver(recv, thread_count, finished.clone());
+        let receive_test = test_shared_receiver(recv, receive_thread_count, finished.clone());
 
         send_test.join().unwrap();
 
@@ -163,7 +165,7 @@ mod test {
     #[test]
     fn test_mpmc() {
         let (send, recv) = MPMC::<i32>::channel();
-        let thread_count = 5;
+        let thread_count = num_cpus::get() / 2;
 
         let finished = Arc::new(Mutex::new(false));
         let send_test = test_shared_sender(send, thread_count);

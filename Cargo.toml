@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.42"
+num_cpus = { version = "1.0", features = [] }
